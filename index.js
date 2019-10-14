@@ -55,17 +55,19 @@ server.get('/api/users', (req, res) => {
 
 server.get('/hash', (req, res) => {
   // read a password from the Authorization header
-  const { username, password } = req.headers;
+  const { username, password } = req.headers.authorization;
   // return an object with the password hashed using bcryptjs
   if (username && password) {
     const hash = bcrypt.hashSync(password, 14);
+    // { hash: '970(&(:OHKJHIY*HJKH(*^)*&YLKJBLKJGHIUGH(*P' }
+    res.status(200).json({hash:hash});
+  } else{
+    res.status(401).json({ message: 'Invalid Credentials' });
   }
-  // { hash: '970(&(:OHKJHIY*HJKH(*^)*&YLKJBLKJGHIUGH(*P' }
-  return {hash:hash};
 })
 
 server.post('/hash', (req, res) => {
-  const { username, password } = req.headers;
+  const { username, password } = req.headers.authorization;
   if (username && password) {
     Users.findBy({ username })
     .first()
