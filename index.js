@@ -1,6 +1,7 @@
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
+const bcrypt = require('bcryptjs');
 
 const db = require('./database/dbConfig.js');
 const Users = require('./users/users-model.js');
@@ -51,6 +52,35 @@ server.get('/api/users', (req, res) => {
     })
     .catch(err => res.send(err));
 });
+
+server.get('/hash', (req, res) => {
+  // read a password from the Authorization header
+  const { username, password } = req.headers;
+  // return an object with the password hashed using bcryptjs
+  if (username && password) {
+    const hash = bcrypt.hashSync(password, 14);
+  }
+  // { hash: '970(&(:OHKJHIY*HJKH(*^)*&YLKJBLKJGHIUGH(*P' }
+  return {hash:hash};
+})
+
+server.post('/hash', (req, res) => {
+  const { username, password } = req.headers;
+  if (username && password) {
+    Users.findBy({ username })
+    .first()
+    .then(user => {
+      if (user) {
+        res.status(200).json({ message: `Welcome ${user.username}!` });
+      } else {
+        res.status(401).json({ message: 'Invalid Credentials' });
+      }
+    })
+    .catch(error => {
+      res.status(500).json(error);
+    });
+  }
+})
 
 const port = process.env.PORT || 5000;
 server.listen(port, () => console.log(`\n** Running on port ${port} **\n`));
